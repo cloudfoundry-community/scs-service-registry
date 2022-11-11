@@ -1,0 +1,12 @@
+eureka:
+  instance:
+    hostname: ${vcap.application.uris[0]}
+    secure-port: 443
+    secure-port-enabled: true
+    non-secure-port-enabled: false
+    secure-health-check-url: https://${eureka.instance.hostname}/actuator/health
+    status-page-url: https://${eureka.instance.hostname}/actuator/info
+  client:
+    fetch-registry: true
+  server:
+    registry-sync-retries: 1

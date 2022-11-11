@@ -1,17 +1,96 @@
-server:
-  port: 8761
 spring:
   application:
-    name: eureka
+    name: eureka-server
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+  security:
+    oauth2:
+      client:
+        provider:
+          uaa:
+            token-uri: ${uaa.token-uri}
+            authorization-uri: ${uaa.authorization-uri}/oauth/authorize
+            jwk-set-uri: ${uaa.jwk-set-uri}
+            user-info-uri: ${uaa.uri}/userinfo
+            user-name-attribute: user_name
+        registration:
+          server:
+            provider: uaa
+            client-id: ${scs.service-registry.client-id}
+            client-secret: ${scs.service-registry.client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authentication-method: basic
+            scope: openid,cloud_controller.read
+
+uaa:
+  token-uri: ${uaa.uri}/oauth/token
+  jwk-set-uri: ${uaa.uri}/token_keys
+
 eureka:
-  client:
-    registerWithEureka: false
-    fetchRegistry: false
+  instance:
+    hostname: ${vcap.application.uris[0]}
+  dashboard:
+    enabled: false
   server:
-    waitTimeInMsWhenSyncEmpty: 0
+    startup:
+      max-wait-seconds: 15
+    peer-node-read-timeout-ms: ${peer-timeout:200}
+    peer-node-connect-timeout-ms: ${peer-timeout:200}
+    my-url: https://${eureka.instance.hostname}/eureka/
+    # Don't try to sync up with peers - there are none, to start with.
+    registry-sync-retries: 0
+    # Don't give out registry information until 90 seconds after startup (warm-up time).
+    # This gives time for the server to collect leases and protects clients
+    # from getting empty or incomplete registry information after server restart
+    wait-time-in-ms-when-sync-empty: 90000
+    # Self-preservation mode is triggered if Eureka doesn't receive >= the expected number of
+    # lease renewal heartbeats from its clients each minute. The expected number is calculated
+    # based on the number of registered clients. We have no mechanism for unregistering
+    # clients though, because there is none that is reliable in all cloudy cases. So we are
+    # reliant on Eureka expiring leases, otherwise clients will never be kicked out of the
+    # registry. This means self-preservation mode must be disabled.
+    enable-self-preservation: false
+    # enable warmup time, see https://github.com/spring-cloud/spring-cloud-netflix/issues/380
+    # Also setting to 0 rather than default value 1 is required in peer replicated configurations
+    # to avoid the expected renewal threshold from being miscalculated.
+    default-open-for-traffic-count: 0
+    # Update the renewal threshold every minute instead of 15. This allows a fresh server to
+    # start updating its renewal threshold within a minute of its first registration. The threshold
+    # would normally be kept in sync with the number of clients through lease registration and
+    # cancellation, but as mentioned above we never unregister clients (cancel leases). Instead we
+    # rely on Eureka evicting leases due to missing renewal heartbeats. This means to better reflect
+    # reality we need to update the renewal threshold more frequently than would otherwise be necessary.
+    renewal-threshold-update-interval-ms: 60000
+    # Disable the read-only-response-cache. Trading premature optimization for better UX.
+    # see https://github.com/Netflix/eureka/issues/536
+    use-read-only-response-cache: false
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+scs:
+  service-registry:
+    app-id: ${vcap.application.application_id}
+    uri: ${vcap.application.uris[0]}
+    authorization-uri: ${uaa.authorization-uri}
+    issuer-uri: ${uaa.token-uri}
+    jwk-set-uri: ${uaa.jwk-set-uri}
+    service-instance-id: ${spring.cloud.appbroker.service-instance-id}
+    count: ${count:1}
+    peers: ${peers:}
+    external-peer-polling-interval-seconds: 20
+
+info:
+  nodeCount: ${scs.service-registry.count:}
+  service-instance-id: ${scs.service-registry.service-instance-id}
+  issuer: ${uaa.token-uri}
+  jwk-set-uri: ${uaa.jwk-set-uri}
+
 management:
+  endpoint:
+    health:
+      show-details: when_authorized
   endpoints:
     web:
       exposure:

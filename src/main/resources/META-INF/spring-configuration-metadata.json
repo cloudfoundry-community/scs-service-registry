@@ -1,0 +1,53 @@
+{
+  "groups": [
+    {
+      "name": "scs.service-registry",
+      "type": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "scs.service-registry.app-id",
+      "type": "java.lang.String",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.authorization-uri",
+      "type": "java.net.URI",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.count",
+      "type": "java.lang.Integer",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties",
+      "defaultValue": 0
+    },
+    {
+      "name": "scs.service-registry.issuer-uri",
+      "type": "java.net.URI",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.jwk-set-uri",
+      "type": "java.net.URI",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.peer-infos",
+      "type": "java.util.List<io.pivotal.spring.cloud.eurekaserver.ScsPeerInfo>",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.service-instance-id",
+      "type": "java.lang.String",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    },
+    {
+      "name": "scs.service-registry.uri",
+      "type": "java.net.URI",
+      "sourceType": "io.pivotal.spring.cloud.eurekaserver.ServiceRegistryProperties"
+    }
+  ],
+  "hints": []
+}
